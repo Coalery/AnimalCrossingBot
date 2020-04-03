@@ -4,6 +4,20 @@
 
 [For. 종미니멈](https://www.twitch.tv/derbls)
 
+## Files Informations
+
+* freshwater_files.txt : 민물고기 데이터
+
+* sea_fish.txt : 바닷물고기 데이터
+
+
+## Java Files Informations
+
+* Main.java : 메인 클래스
+
+* TwitchBot.java : 트위치 봇 클래스
+
+
 ## fishdata.db informations
 
 * Table name : fishdata
@@ -36,6 +50,7 @@
 `바닷물고기 : 바다, 부두`
 
 * SQLite
+
 
 # References
 [PircBot-1.5.0](http://www.jibble.org/pircbot.php)
