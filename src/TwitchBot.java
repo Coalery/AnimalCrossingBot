@@ -1,7 +1,20 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import org.jibble.pircbot.PircBot;
 
 public class TwitchBot extends PircBot {
 	
+	static {
+		try {
+			Class.forName("org.sqlite.JDBC");
+		} catch (Exception e) { e.printStackTrace(); }
+	}
+	
+	private String dbPath = "D:\\File\\HW\\Files\\Programming\\Java\\AnimalCrossingBot\\fishdata.db";
 	private String channel;
 	
 	public TwitchBot(String channel, String nick) {
@@ -38,6 +51,19 @@ public class TwitchBot extends PircBot {
     	if(split[0].equals("!물고기")) {
     		if(split.length == 1)
     			return "!물고기 <정보/목록>";
+    		else if(split.length == 2) {
+    			if(split[1].equals("정보"))
+    				return "!물고기 정보 <물고기 이름>";
+    			if(split[1].equals("목록"))
+    				return "!물고기 목록 <월>";
+    		}
+    		else if(split.length == 3) {
+    			if(split[1].equals("정보"))
+    				return getFishInformation(split[2]);
+    			if(split[1].equals("목록")) {
+    				
+    			}
+    		}
     	}
     	if(split[0].equals("!돌돔")) {
     		if(split.length == 1)
@@ -50,5 +76,36 @@ public class TwitchBot extends PircBot {
     		}
     	}
     	return null;
+    }
+    
+    private String getFishInformation(String name) {
+    	Connection conn = null;
+    	Statement stmt = null;
+    	
+    	try {
+    		conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+    		stmt = conn.createStatement();
+    		ResultSet rs = stmt.executeQuery("select * from fishdata where name='" + name + "'");
+    		boolean success = rs.next();
+    		if(!success) return "데이터를 불러오는데 실패하였습니다.";
+    		
+    		String datestr = rs.getString(2);
+    		String time = rs.getString(3);
+    		String location = rs.getString(4);
+    		String size = rs.getString(5);
+    		int price = rs.getInt(6);
+    		if(time.equals("하루종일"))
+    			return String.format("%s :: %s, %s %s에서 출현 :: %s :: %d벨", name, datestr, time, location, size, price);
+    		else
+    			return String.format("%s :: %s, %s에 %s에서 출현 :: %s :: %d벨", name, datestr, time, location, size, price);
+    	} catch(SQLException e) {
+    		e.printStackTrace();
+    	} finally {
+    		if(stmt != null)
+    			try { stmt.close(); } catch(SQLException e) { e.printStackTrace(); }
+    		if(conn != null)
+    			try { conn.close(); } catch(SQLException e) { e.printStackTrace(); }
+    	}
+    	return "데이터를 불러오는데 실패하였습니다.";
     }
 }

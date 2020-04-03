@@ -4,6 +4,7 @@
 
 [For. 종미니멈](https://www.twitch.tv/derbls)
 
+
 ## Files Informations
 
 * freshwater_files.txt : 민물고기 데이터
@@ -52,5 +53,8 @@
 * SQLite
 
 
-# References
-[PircBot-1.5.0](http://www.jibble.org/pircbot.php)
+# Referenced Libraries
+
+* [PircBot-1.5.0](http://www.jibble.org/pircbot.php)
+
+* [sqlite-jdbc-3.27.2.1](https://github.com/xerial/sqlite-jdbc)
