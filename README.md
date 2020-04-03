@@ -10,7 +10,7 @@
 
 * Fields
 
-|name|description|type|
+|Field Name|Description|Type|
 |:---:|:---|:---:|
 |name|물고기의 이름|String|
 |datestr|물고기가 나타나는 기간|String|
