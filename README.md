@@ -9,6 +9,7 @@
 * Table name : fishdata
 
 * Fields
+
 |name|description|type|
 |:---:|:---|:---:|
 |name|물고기의 이름|String|
