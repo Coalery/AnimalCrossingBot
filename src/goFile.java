@@ -7,19 +7,20 @@ import org.jibble.pircbot.NickAlreadyInUseException;
 
 public class goFile {
 
-    private static final String OAUTH = "";
+    private static final String OAUTH = Oauth.oauth;
     private static final String ADDRESS = "irc.twitch.tv.";
     private static final int PORT = 6667;
-    private static final String Nick = "MYNICKHERE";
-    private static final String Channel = "#doralife12";
+    private static final String NICKNAME = "MYNICKHERE";
+    private static final String CHANNEL = "#doralife12";
 
     public static void main(String[] args) throws NickAlreadyInUseException, IOException, IrcException {
-        TwitchBot bot = new TwitchBot(Nick);
-//        bot.setVerbose(true);
+        TwitchBot bot = new TwitchBot(NICKNAME);
         bot.setVerbose(false);
 
         bot.connect(ADDRESS, PORT, OAUTH);
-        bot.joinChannel(Channel);
+        bot.joinChannel(CHANNEL);
+        
+        bot.sendMessage(CHANNEL, "러리봇이 켜졌습니다.");
         
         JFrame frame = new JFrame();
         frame.setSize(400, 300);
