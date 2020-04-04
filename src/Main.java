@@ -9,8 +9,8 @@ public class Main {
 
     private static final String ADDRESS = "irc.twitch.tv.";
     private static final int PORT = 6667;
-    private static final String NICKNAME = "MYNICKHERE";
-    public static final String CHANNEL = "#doralife12";
+    private static final String NICKNAME = "doralife12_bot";
+    public static final String CHANNEL = "#derbls";
 
     public static void main(String[] args) throws NickAlreadyInUseException, IOException, IrcException {
         TwitchBot bot = new TwitchBot(CHANNEL, NICKNAME);

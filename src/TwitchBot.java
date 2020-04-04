@@ -36,9 +36,10 @@ public class TwitchBot extends PircBot {
             	for(int i=4; i<recvLines.length; i++)
             		message.append(" " + recvLines[i]);
             	String result = recieveMessage(sender, message.toString());
-            	System.out.println("[Result] " + result);
-            	if(result != null)
+            	if(result != null) {
             		sendMessage(channel, "@" + sender + " : " + result);
+            		System.out.println("[Send Completed] " + result);
+            	}
             }
         }
     }
