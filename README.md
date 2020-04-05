@@ -1,6 +1,6 @@
 # AnimalCrossingBot
 
-모여봐요 동물의 숲 물고기 시세 트위치 봇
+모여봐요 동물의 숲 트위치 봇
 
 [For. 종미니멈](https://www.twitch.tv/derbls)
 
@@ -11,12 +11,31 @@
 
 * sea_fish.txt : 바닷물고기 데이터
 
+* fishdata.db : 물고기 데이터베이스
+
+* command.db : 커스텀 커맨드 데이터베이스
+
 
 ## Java Files Informations
 
 * Main.java : 메인 클래스
 
 * TwitchBot.java : 트위치 봇 클래스
+
+* Command.java : 커맨드 클래스
+
+
+## command.db informations
+
+* Table name : command
+
+* Fields
+
+|Field Name|Description|Type|
+|:---:|:---|:---:|
+|maker|명령어를 만든 사람|String|
+|request|반응할 명령어|String|
+|response|명령어에 대한 대답|String|
 
 
 ## fishdata.db informations
@@ -49,8 +68,6 @@
 `민물고기 : 강, 연못, 호수, 절벽위, 하구`
 
 `바닷물고기 : 바다, 부두`
-
-* SQLite
 
 
 # Referenced Libraries

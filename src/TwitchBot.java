@@ -3,6 +3,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.jibble.pircbot.PircBot;
 
@@ -14,13 +16,23 @@ public class TwitchBot extends PircBot {
 		} catch (Exception e) { e.printStackTrace(); }
 	}
 	
-	private final String dbPath = "D:\\File\\HW\\Files\\Programming\\Java\\AnimalCrossingBot\\fishdata.db";
+	private final String fishDBPath = "D:\\File\\HW\\Files\\Programming\\Java\\AnimalCrossingBot\\fishdata.db";
+	private final String cmdDBPath = "D:\\File\\HW\\Files\\Programming\\Java\\AnimalCrossingBot\\command.db";
 	private String channel;
+	
+	private HashMap<String, Command> commands;
 	
 	public TwitchBot(String channel, String nick) {
 		this.channel = channel;
 		setName(nick);
 		setLogin(nick);
+		
+		commands = new HashMap<>();
+		ArrayList<Command> commandList = getCommands();
+		for(int i=0; i<commandList.size(); i++) {
+			Command tmpCmd = commandList.get(i);
+			commands.put(tmpCmd.getRequest(), tmpCmd);
+		}
 	}
 
     @Override
@@ -33,6 +45,8 @@ public class TwitchBot extends PircBot {
             if(recvLines[1].equalsIgnoreCase("PRIVMSG")) {
             	String sender = recvLines[0].split("!")[0].substring(1);
             	StringBuilder message = new StringBuilder(recvLines[3].substring(1));
+            	if(!recvLines[3].substring(1).startsWith("!"))
+            		return;
             	for(int i=4; i<recvLines.length; i++)
             		message.append(" " + recvLines[i]);
             	String result = recieveMessage(sender, message.toString());
@@ -47,9 +61,19 @@ public class TwitchBot extends PircBot {
     private String recieveMessage(String sender, String message) {
     	String[] split = message.split(" ");
     	System.out.println("[" + message + "]");
-    	if(split[0].equals("!러리봇"))
-    		return "띠링";
-    	if(split[0].equals("!물고기")) {
+    	
+    	if(!split[0].startsWith("!"))
+    		return null;
+    	
+    	String[] masterCommand = {"!도움말", "!물고기", "!돌돔", "!명령어"};
+    	
+    	if(split[0].equals("!도움말")) {
+    		StringBuilder sb = new StringBuilder("!도움말");
+    		for(int i=1; i<masterCommand.length; i++)
+    			sb.append(", " + masterCommand[i]);
+    		return sb.toString();
+    	}
+    	else if(split[0].equals("!물고기")) {
     		if(split.length == 1)
     			return "!물고기 <정보/목록>";
     		else if(split.length == 2) {
@@ -95,7 +119,7 @@ public class TwitchBot extends PircBot {
     			return getFishList(location, date);
     		}
     	}
-    	if(split[0].equals("!돌돔")) {
+    	else if(split[0].equals("!돌돔")) {
     		if(split.length == 1)
     			return "!돌돔 <벨>";
     		try {
@@ -105,7 +129,118 @@ public class TwitchBot extends PircBot {
     			return "숫자 값을 입력해주세요.";
     		}
     	}
+    	else if(split[0].equals("!명령어")) {
+    		if(split.length == 1)
+    			return "!명령어 <추가/수정/삭제>";
+    		else if(split.length == 2) {
+    			if(split[1].equals("추가"))
+    				return "!명령어 추가 <명령어> <반환값>";
+    			else if(split[1].equals("수정"))
+    				return "!명령어 수정 <명령어> <반환값>";
+    			else if(split[1].equals("삭제"))
+    				return "!명령어 삭제 <명령어>";
+    		}
+    		else if(split.length == 3) {
+    			if(split[1].equals("삭제")) {
+    				if(commands.containsKey(split[2])) {
+    					Command currentCmd = commands.get(split[2]);
+    					if(sender.equals(currentCmd.getMaker()) || sender.equals("derbls")) {
+    						commands.remove(currentCmd.getMaker());
+    						removeCommand(currentCmd);
+    					} else
+    						return "명령어 삭제 권한이 없습니다!";
+    				} else
+    					return "존재하지 않는 명령어입니다!";
+    			}
+    		}
+    		else if(split.length == 4) {
+    			if(split[1].equals("추가")) {
+    				if(!commands.containsKey(split[2])) {
+    					String request = split[2];
+    					String response = split[3];
+    					Command currentCmd = new Command(sender, request, response);
+    					commands.put(request, currentCmd);
+    					createCommand(currentCmd);
+    				} else
+    					return "명령어가 이미 존재합니다!";
+    			}
+    			else if(split[1].equals("수정")) {
+    				
+    			}
+    		}
+    	}
+    	else { // Custom Command
+    		if(!commands.containsKey(split[0]))
+    			return null;
+    		return commands.get(split[0]).getResponse();
+    	}
     	return null;
+    }
+    
+    private void createCommand(Command cmd) {
+    	Connection conn = null;
+    	Statement stmt = null;
+    	
+    	try {
+    		conn = DriverManager.getConnection("jdbc:sqlite:" + cmdDBPath);
+    		stmt = conn.createStatement();
+    		stmt.executeUpdate("insert into command values('" + cmd.getMaker() + "', '" + cmd.getRequest() + "', '" + cmd.getResponse() + "')");
+    	} catch(SQLException e) {
+    		e.printStackTrace();
+    	} finally {
+    		if(stmt != null)
+    			try { stmt.close(); } catch(SQLException e) { e.printStackTrace(); }
+    		if(conn != null)
+    			try { conn.close(); } catch(SQLException e) { e.printStackTrace(); }
+    	}
+    }
+
+    
+    private void removeCommand(Command cmd) {
+    	Connection conn = null;
+    	Statement stmt = null;
+    	
+    	try {
+    		conn = DriverManager.getConnection("jdbc:sqlite:" + cmdDBPath);
+    		stmt = conn.createStatement();
+    		stmt.executeUpdate("delete from command where request='" + cmd.getRequest() + "'");
+    	} catch(SQLException e) {
+    		e.printStackTrace();
+    	} finally {
+    		if(stmt != null)
+    			try { stmt.close(); } catch(SQLException e) { e.printStackTrace(); }
+    		if(conn != null)
+    			try { conn.close(); } catch(SQLException e) { e.printStackTrace(); }
+    	}
+    }
+    
+    private ArrayList<Command> getCommands() {
+    	ArrayList<Command> result = new ArrayList<Command>();
+    	
+    	Connection conn = null;
+    	Statement stmt = null;
+    	
+    	try {
+    		conn = DriverManager.getConnection("jdbc:sqlite:" + cmdDBPath);
+    		stmt = conn.createStatement();
+    		ResultSet rs =  stmt.executeQuery("select * from command");
+			
+			while(rs.next()) {
+				String maker = rs.getString(1);
+				String request = rs.getString(2);
+				String response = rs.getString(3);
+				result.add(new Command(maker, request, response));
+			}
+    	} catch(SQLException e) {
+    		e.printStackTrace();
+    	} finally {
+    		if(stmt != null)
+    			try { stmt.close(); } catch(SQLException e) { e.printStackTrace(); }
+    		if(conn != null)
+    			try { conn.close(); } catch(SQLException e) { e.printStackTrace(); }
+    	}
+    	
+    	return result;
     }
     
     private String getFishList(String location, int date) {
@@ -123,7 +258,7 @@ public class TwitchBot extends PircBot {
     			query += " where date" + String.format("%02d", date) + "=1";
     		query += " order by name";
     		
-    		conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+    		conn = DriverManager.getConnection("jdbc:sqlite:" + fishDBPath);
     		stmt = conn.createStatement();
     		ResultSet rs =  stmt.executeQuery(query);
 			StringBuilder sb = new StringBuilder();
@@ -151,7 +286,7 @@ public class TwitchBot extends PircBot {
     	Statement stmt = null;
     	
     	try {
-    		conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+    		conn = DriverManager.getConnection("jdbc:sqlite:" + fishDBPath);
     		stmt = conn.createStatement();
     		ResultSet rs = stmt.executeQuery("select * from fishdata where name='" + name + "'");
 			boolean success = rs.next();
