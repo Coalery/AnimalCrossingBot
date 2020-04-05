@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.jibble.pircbot.PircBot;
 
@@ -71,6 +72,9 @@ public class TwitchBot extends PircBot {
     		StringBuilder sb = new StringBuilder("!도움말");
     		for(int i=1; i<masterCommand.length; i++)
     			sb.append(", " + masterCommand[i]);
+    		Iterator<String> it = commands.keySet().iterator();
+    		while(it.hasNext())
+    			sb.append(", " + it.next());
     		return sb.toString();
     	}
     	else if(split[0].equals("!물고기")) {
@@ -145,7 +149,7 @@ public class TwitchBot extends PircBot {
     				if(commands.containsKey(split[2])) {
     					Command currentCmd = commands.get(split[2]);
     					if(sender.equals(currentCmd.getMaker()) || sender.equals("derbls")) {
-    						commands.remove(currentCmd.getMaker());
+    						commands.remove(currentCmd.getRequest());
     						removeCommand(currentCmd);
     					} else
     						return "명령어 삭제 권한이 없습니다!";
@@ -153,19 +157,39 @@ public class TwitchBot extends PircBot {
     					return "존재하지 않는 명령어입니다!";
     			}
     		}
-    		else if(split.length == 4) {
+    		else if(split.length >= 4) {
     			if(split[1].equals("추가")) {
     				if(!commands.containsKey(split[2])) {
     					String request = split[2];
+    					if(!request.startsWith("!"))
+    						request = "!" + request;
     					String response = split[3];
+    					for(int i=4; i<split.length; i++)
+    						response += " " + split[i];
     					Command currentCmd = new Command(sender, request, response);
     					commands.put(request, currentCmd);
     					createCommand(currentCmd);
+    					return "명령어가 정상적으로 추가되었습니다!";
     				} else
     					return "명령어가 이미 존재합니다!";
     			}
     			else if(split[1].equals("수정")) {
-    				
+    				if(commands.containsKey(split[2])) {
+    					Command currentCmd = commands.get(split[2]);
+    					if(sender.equals(currentCmd.getMaker()) || sender.equals("derbls")) {
+    						commands.remove(currentCmd.getRequest());
+    						String request = split[2];
+    						String response = split[3];
+        					for(int i=4; i<split.length; i++)
+        						response += " " + split[i];
+    						Command targetCmd = new Command(sender, request, response);
+    						commands.put(request, targetCmd);
+    						editCommand(currentCmd);
+    						return "명령어 수정이 완료되었습니다!";
+    					} else
+    						return "명령어 수정 권한이 없습니다!";
+    				} else
+    					return "존재하지 않는 명령어입니다!";
     			}
     		}
     	}
@@ -195,6 +219,23 @@ public class TwitchBot extends PircBot {
     	}
     }
 
+    private void editCommand(Command cmd) {
+    	Connection conn = null;
+    	Statement stmt = null;
+    	
+    	try {
+    		conn = DriverManager.getConnection("jdbc:sqlite:" + cmdDBPath);
+    		stmt = conn.createStatement();
+    		stmt.executeUpdate("update command set response='" + cmd.getResponse() + "' where request='" + cmd.getRequest() + "'");
+    	} catch(SQLException e) {
+    		e.printStackTrace();
+    	} finally {
+    		if(stmt != null)
+    			try { stmt.close(); } catch(SQLException e) { e.printStackTrace(); }
+    		if(conn != null)
+    			try { conn.close(); } catch(SQLException e) { e.printStackTrace(); }
+    	}
+    }
     
     private void removeCommand(Command cmd) {
     	Connection conn = null;
