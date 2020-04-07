@@ -22,6 +22,5 @@ public class Main {
         JFrame frame = new JFrame();
         frame.setSize(400, 300);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
     }
 }

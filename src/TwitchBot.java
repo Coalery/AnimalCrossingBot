@@ -34,6 +34,7 @@ public class TwitchBot extends PircBot {
 			Command tmpCmd = commandList.get(i);
 			commands.put(tmpCmd.getRequest(), tmpCmd);
 		}
+		sendMessage(channel, "치사토봇 ON!");
 	}
 
     @Override
@@ -146,11 +147,15 @@ public class TwitchBot extends PircBot {
     		}
     		else if(split.length == 3) {
     			if(split[1].equals("삭제")) {
-    				if(commands.containsKey(split[2])) {
-    					Command currentCmd = commands.get(split[2]);
+    				String request = split[2];
+    				if(!request.startsWith("!"))
+						request = "!" + request;
+    				if(commands.containsKey(request)) {
+    					Command currentCmd = commands.get(request);
     					if(sender.equals(currentCmd.getMaker()) || sender.equals("derbls")) {
     						commands.remove(currentCmd.getRequest());
     						removeCommand(currentCmd);
+    						return "명령어가 정상적으로 삭제되었습니다!";
     					} else
     						return "명령어 삭제 권한이 없습니다!";
     				} else
@@ -179,6 +184,8 @@ public class TwitchBot extends PircBot {
     					if(sender.equals(currentCmd.getMaker()) || sender.equals("derbls")) {
     						commands.remove(currentCmd.getRequest());
     						String request = split[2];
+    						if(!request.startsWith("!"))
+        						request = "!" + request;
     						String response = split[3];
         					for(int i=4; i<split.length; i++)
         						response += " " + split[i];
@@ -323,6 +330,9 @@ public class TwitchBot extends PircBot {
     }
     
     private String getFishInformation(String name) {
+    	if(name.equals("뚊"))
+    		name = "돌돔";
+    	
     	Connection conn = null;
     	Statement stmt = null;
     	
