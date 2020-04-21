@@ -34,13 +34,12 @@ public class TwitchBot extends PircBot {
 			Command tmpCmd = commandList.get(i);
 			commands.put(tmpCmd.getRequest(), tmpCmd);
 		}
-		sendMessage(channel, "치사토봇 ON!");
 	}
 
     @Override
     protected void handleLine(String line) {
         super.handleLine(line);
-        System.out.println("[Message] " + line);
+        Main.addLog(line);
         
         if (line.startsWith(":")) {
             String[] recvLines = line.split(" ");
@@ -164,10 +163,11 @@ public class TwitchBot extends PircBot {
     		}
     		else if(split.length >= 4) {
     			if(split[1].equals("추가")) {
-    				if(!commands.containsKey(split[2])) {
-    					String request = split[2];
-    					if(!request.startsWith("!"))
-    						request = "!" + request;
+    				String request = split[2];
+					if(!request.startsWith("!"))
+						request = "!" + request;
+					
+    				if(!commands.containsKey(request)) {
     					String response = split[3];
     					for(int i=4; i<split.length; i++)
     						response += " " + split[i];
@@ -179,17 +179,19 @@ public class TwitchBot extends PircBot {
     					return "명령어가 이미 존재합니다!";
     			}
     			else if(split[1].equals("수정")) {
-    				if(commands.containsKey(split[2])) {
+    				String request = split[2];
+					if(!request.startsWith("!"))
+						request = "!" + request;
+					
+    				if(commands.containsKey(request)) {
     					Command currentCmd = commands.get(split[2]);
     					if(sender.equals(currentCmd.getMaker()) || sender.equals("derbls")) {
-    						commands.remove(currentCmd.getRequest());
-    						String request = split[2];
-    						if(!request.startsWith("!"))
-        						request = "!" + request;
     						String response = split[3];
         					for(int i=4; i<split.length; i++)
         						response += " " + split[i];
+        					
     						Command targetCmd = new Command(sender, request, response);
+    						commands.remove(currentCmd.getRequest());
     						commands.put(request, targetCmd);
     						editCommand(currentCmd);
     						return "명령어 수정이 완료되었습니다!";
@@ -330,8 +332,19 @@ public class TwitchBot extends PircBot {
     }
     
     private String getFishInformation(String name) {
+    	if(name.equals("타이어"))
+    		return "타이어 :: 타이어! 신발보다 싸다 :: 치!";
+    	else if(name.equals("신발"))
+    		return "신발 :: 생태계 교란종 :: 사!";
+    	else if(name.equals("돌"))
+    		return "돌 :: 설명을 구하고 있습니다 :: 토!";
+    	else if(name.equals("종미니멈"))
+    		return "종미니멈 :: 방송을 켰을 때, 트위치에서 출현 :: 엄청난 에임과 수듄을 보여준다 :: 측정불가";
+    	
     	if(name.equals("뚊"))
     		name = "돌돔";
+    	else if(name.equals("옖"))
+    		name = "옐로우퍼치";
     	
     	Connection conn = null;
     	Statement stmt = null;
